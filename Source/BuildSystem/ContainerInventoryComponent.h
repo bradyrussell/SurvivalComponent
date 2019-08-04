@@ -6,7 +6,7 @@
 #include "BaseInventoryComponent.h"
 #include "ContainerInventoryComponent.generated.h"
 
-// crafting inventory  has delegates like OnCompleted
+
 
 /**
  * 
@@ -25,4 +25,6 @@ public:
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Replicated, Category="Inventory - Container") TArray<APlayerController*> CurrentViewers;
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Inventory - Container") void setLocked(bool Locked);
+
+	UFUNCTION(BlueprintPure, Category="Inventory - Container") bool IsLocked() const { return bIsLocked; }
 };

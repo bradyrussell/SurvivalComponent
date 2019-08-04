@@ -1,13 +1,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "DataTableEditor/Private/SRowEditor.h"
 #include "InventoryStructs.generated.h"
 
 USTRUCT(BlueprintType)
 	struct FItemStack {
 	GENERATED_BODY()
 	FItemStack()
-		: Amount(0), Item(0) {
+		: Amount(0), Item(0) { 
 	}
 
 	FItemStack(int32 Item, int32 Amount)
@@ -32,7 +33,27 @@ UENUM(BlueprintType)
 };
 
 USTRUCT(BlueprintType)
-	struct FProcessingRecipe {
+	struct FItemDefinition : public FTableRowBase {
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category="Item") FText DisplayName;
+
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category="Item") int32 MaxStack = 256;
+
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category="Item") bool bIsEquippable; // maybe store a ref to an equippableproperties class, similar to damagetypes
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category="Item") bool bIsConsumable; // same for consumable props?
+
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category="Item") int32 Value;
+	
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category="Item") FText DisplayCategory;
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category="Item") FText DisplayDescription;
+};
+
+// todo loot table
+// todo singleton class to set global dbs like item defs, recipes, loot tables
+
+USTRUCT(BlueprintType)
+	struct FProcessingRecipe : public FTableRowBase {
 	GENERATED_BODY()
 
 

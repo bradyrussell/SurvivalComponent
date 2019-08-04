@@ -8,6 +8,14 @@
 #include "Engine/DataTable.h"
 #include "CraftingInventoryComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBeginProcessingRecipe, FProcessingRecipe, Recipe);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFinishProcessingRecipe, FProcessingRecipe, Recipe);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFailedProcessingRecipe, FProcessingRecipe, Recipe);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FQueuedProcessingRecipe, FProcessingRecipe, Recipe);
+
 /**
  * 
  */
@@ -15,13 +23,18 @@ UCLASS( ClassGroup=(Inventory), meta=(BlueprintSpawnableComponent) )
 	class BUILDSYSTEM_API UCraftingInventoryComponent : public UContainerInventoryComponent {
 	GENERATED_BODY()
 public:
-	
+
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Replicated, Category="Inventory - Crafting") ECraftingType Type;
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category="Inventory - Crafting") UDataTable* RecipeDataTable;
+
+	UPROPERTY(BlueprintAssignable, Category="Inventory - Crafting Events") FBeginProcessingRecipe BeginProcessingRecipe_Event;
+	UPROPERTY(BlueprintAssignable, Category="Inventory - Crafting Events") FFinishProcessingRecipe FinishProcessingRecipe_Event;
+	UPROPERTY(BlueprintAssignable, Category="Inventory - Crafting Events") FFailedProcessingRecipe FailedProcessingRecipe_Event;
+	UPROPERTY(BlueprintAssignable, Category="Inventory - Crafting Events") FQueuedProcessingRecipe QueuedProcessingRecipe_Event;
 
 	TQueue<FProcessingRecipe> ProcessingQueue;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, Category="Inventory - Crafting") float Fuel = 0.f;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, Category="Inventory - Crafting") float MaximumFuel = 10000.f;
 
 	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Replicated, Category="Inventory - Crafting") bool bIsCurrentlyProcessing = false;
 
@@ -38,9 +51,16 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Inventory - Crafting") FProcessingRecipe PeekNextRecipe() const;
 
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Inventory - Crafting") bool AddFuel(float Amount);
+
 private:
 	//called when a recipe finishes. 
 	void EndProcessing();
+
+	UFUNCTION(NetMulticast, Reliable) void Multi_BeginProcessingRecipe(FProcessingRecipe Recipe);
+	UFUNCTION(NetMulticast, Reliable) void Multi_FinishProcessingRecipe(FProcessingRecipe Recipe);
+	UFUNCTION(NetMulticast, Reliable) void Multi_FailedProcessingRecipe(FProcessingRecipe Recipe);
+	UFUNCTION(NetMulticast, Reliable) void Multi_QueuedProcessingRecipe(FProcessingRecipe Recipe);
 
 	// // keeps the client timer in sync with the server timer
 	// UFUNCTION(Client, Reliable) void Client_SetTimer(float duration);

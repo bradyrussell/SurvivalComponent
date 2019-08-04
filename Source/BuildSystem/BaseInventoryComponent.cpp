@@ -3,6 +3,8 @@
 
 #include "BaseInventoryComponent.h"
 #include "UnrealNetwork.h"
+#include "Engine/Engine.h"
+#include "InventoryGameInstance.h"
 
 // Sets default values for this component's properties
 UBaseInventoryComponent::UBaseInventoryComponent() {
@@ -91,6 +93,26 @@ TArray<FItemStack> UBaseInventoryComponent::RemoveItems(TArray<FItemStack> Items
 	return excess;
 }
 
+bool UBaseInventoryComponent::TransferToInventory(UBaseInventoryComponent* Recipient, int32 Slot) {
+	auto ItemInSlot = InventorySlots[Slot];
+	if(ItemInSlot.isEmpty()) return false;
+
+	InventorySlots[Slot] = Recipient->AddItem(ItemInSlot); // move into recipient, leaving overflow
+	return true;
+}
+
+bool UBaseInventoryComponent::TransferAllToInventory(UBaseInventoryComponent* Recipient) {
+	if(GetNumberFilledSlots() == 0) return false;
+	InventorySlots = Recipient->AddItems(InventorySlots);
+	return true;
+}
+
+FItemStack UBaseInventoryComponent::ExchangeItem(int32 Slot, FItemStack NewItem) {
+	const auto Old = InventorySlots[Slot];
+	InventorySlots[Slot] = NewItem;
+	return Old;
+}
+
 bool UBaseInventoryComponent::hasItem(FItemStack Item) {
 	for (auto& elem : InventorySlots) {
 		if (Item.Item == elem.Item) { Item.Amount -= elem.Amount; }
@@ -154,6 +176,30 @@ bool UBaseInventoryComponent::areAllEmpty(TArray<FItemStack> Items) {
 }
 
 bool UBaseInventoryComponent::isEmpty(FItemStack Item) { return Item.isEmpty(); }
+
+FString UBaseInventoryComponent::ToString(FItemStack Item) {
+	if(Item.isEmpty()) return FString(TEXT("Empty"));
+	return *FString::Printf(TEXT("%i: %i"), Item.Item, Item.Amount);
+}
+
+FString UBaseInventoryComponent::ToStrings(TArray<FItemStack> Items) {
+	FString out(""); 
+	for(auto &elem:Items) {
+		out.Append(ToString(elem)+LINE_TERMINATOR);
+	}
+	return out;
+}
+
+int32 UBaseInventoryComponent::GetMaxStackForItem(FName item) const { // todo i dont like that this is a property of the inventory
+	FString context = FString();
+	auto world = GetWorld();
+	check(world);
+	auto instance = Cast<UInventoryGameInstance>(world->GetGameInstance());
+	check(instance);
+	const auto ItemDB = instance->ItemDefinitions;
+	check(ItemDB);
+	return ItemDB->FindRow<FItemDefinition>(item, context)->MaxStack;
+}
 
 
 void UBaseInventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const {

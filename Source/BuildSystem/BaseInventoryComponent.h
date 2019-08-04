@@ -11,11 +11,10 @@
 #define DBG_MAX_STACK 256
 
 UCLASS( ClassGroup=(Inventory), meta=(BlueprintSpawnableComponent) )
-class BUILDSYSTEM_API UBaseInventoryComponent : public UActorComponent
-{
+	class BUILDSYSTEM_API UBaseInventoryComponent : public UActorComponent {
 	GENERATED_BODY()
 
-public:	
+public:
 	// Sets default values for this component's properties
 	UBaseInventoryComponent();
 
@@ -25,7 +24,7 @@ public:
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
-
+public:
 	//adds an item stack to the inventory, returning any excess items
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Inventory") FItemStack AddItem(FItemStack NewItem);
 
@@ -37,6 +36,12 @@ protected:
 
 	// removes the amounts of the items from the inv, returning the items it could not remove
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Inventory") TArray<FItemStack> RemoveItems(TArray<FItemStack> Items);
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Inventory") bool TransferToInventory(UBaseInventoryComponent* Recipient, int32 Slot);
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Inventory") bool TransferAllToInventory(UBaseInventoryComponent* Recipient);
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Inventory") FItemStack ExchangeItem(int32 Slot, FItemStack NewItem);
 
 	// returns whether the inventory contains at least the given Amount of Item
 	UFUNCTION(BlueprintCallable, Category="Inventory") bool hasItem(FItemStack Item);
@@ -64,6 +69,10 @@ protected:
 
 	UFUNCTION(BlueprintPure, Category="Inventory") static bool isEmpty(FItemStack Item);
 
-public:	
+	UFUNCTION(BlueprintPure, Category="Inventory") static FString ToString(FItemStack Item);
+	UFUNCTION(BlueprintPure, Category="Inventory") static FString ToStrings(TArray<FItemStack> Items);
 
+	//// data lookups below
+
+	UFUNCTION(BlueprintPure, Category="Inventory") int32 GetMaxStackForItem(FName item) const;
 };
