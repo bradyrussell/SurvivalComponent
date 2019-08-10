@@ -8,20 +8,32 @@ USTRUCT(BlueprintType)
 	struct FItemStack {
 	GENERATED_BODY()
 	FItemStack()
-		: Amount(0), Item(0) { 
+		: Amount(0), Item(NAME_None) { 
 	}
 
-	FItemStack(int32 Item, int32 Amount)
+	FItemStack(FName Item, int32 Amount)
 		: Amount(Amount),
 		  Item(Item) {
 	}
 
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category="Item Stack") int32 Amount;
 
-	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category="Item Stack") int32 Item;
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category="Item Stack") FName Item;
 
 	/*UFUNCTION(BlueprintPure) not allowed*/
-	bool isEmpty() { return Item == 0 || Amount == 0; }
+	bool isEmpty() { return Item == NAME_None || Amount == 0; }
+
+	FORCEINLINE bool operator<(const FItemStack &Other) const
+	{
+		if(this->Item == Other.Item) return this->Amount > Other.Amount;
+		return this->Item < Other.Item; // this is necessary to ensure A->Z, but 255->0 ordering when sorted
+	}
+
+	FORCEINLINE bool operator==(const FItemStack &Other) const
+	{
+		return this->Item == Other.Item && this->Amount == Other.Amount;
+	}
+
 };
 
 UENUM(BlueprintType)
@@ -36,17 +48,19 @@ USTRUCT(BlueprintType)
 	struct FItemDefinition : public FTableRowBase {
 	GENERATED_BODY()
 
-	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category="Item") FText DisplayName;
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category="Item") FText DisplayName;
 
-	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category="Item") int32 MaxStack = 256;
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category="Item") int32 MaxStack = 256;
 
-	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category="Item") bool bIsEquippable; // maybe store a ref to an equippableproperties class, similar to damagetypes
-	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category="Item") bool bIsConsumable; // same for consumable props?
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category="Item") bool bIsEquippable; // maybe store a ref to an equippableproperties class, similar to damagetypes
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category="Item") bool bIsConsumable; // same for consumable props?
 
-	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category="Item") int32 Value;
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category="Item") int32 Value;
 	
-	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category="Item") FText DisplayCategory;
-	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category="Item") FText DisplayDescription;
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category="Item") FText DisplayCategory;
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category="Item") FText DisplayDescription;
+
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category="Item") UTexture2D* DisplayIcon;
 };
 
 // todo loot table

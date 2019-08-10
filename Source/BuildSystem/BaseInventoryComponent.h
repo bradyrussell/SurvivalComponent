@@ -58,9 +58,9 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Inventory") void ResizeInventory(int32 NewNumberSlots);
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Inventory") void ClearInventory();
 
-	UFUNCTION(BlueprintCallable, Category="Inventory") int32 GetFirstEmptySlot();
-	UFUNCTION(BlueprintCallable, Category="Inventory") int32 GetNumberEmptySlots();
-	UFUNCTION(BlueprintCallable, Category="Inventory") int32 GetNumberFilledSlots();
+	UFUNCTION(BlueprintPure, Category="Inventory") int32 GetFirstEmptySlot();
+	UFUNCTION(BlueprintPure, Category="Inventory") int32 GetNumberEmptySlots();
+	UFUNCTION(BlueprintPure, Category="Inventory") int32 GetNumberFilledSlots();
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Inventory") void SwapSlots(int32 FirstSlot, int32 SecondSlot);
 
@@ -72,7 +72,9 @@ public:
 	UFUNCTION(BlueprintPure, Category="Inventory") static FString ToString(FItemStack Item);
 	UFUNCTION(BlueprintPure, Category="Inventory") static FString ToStrings(TArray<FItemStack> Items);
 
+	UFUNCTION(BlueprintCallable, Category="Inventory") void SortInventory();
+
 	//// data lookups below
 
-	UFUNCTION(BlueprintPure, Category="Inventory") int32 GetMaxStackForItem(FName item) const;
+	//UFUNCTION(BlueprintPure, Category="Inventory") int32 GetMaxStackForItem(FName item) const;
 };

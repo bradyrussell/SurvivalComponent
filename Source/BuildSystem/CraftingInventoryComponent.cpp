@@ -140,6 +140,6 @@ void UCraftingInventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimePro
 	DOREPLIFETIME(UCraftingInventoryComponent, Fuel);
 	DOREPLIFETIME(UCraftingInventoryComponent, bIsCurrentlyProcessing);
 	DOREPLIFETIME(UCraftingInventoryComponent, CurrentJob_Recipe);
-	DOREPLIFETIME(UCraftingInventoryComponent, CurrentJob_Timer);
+	//DOREPLIFETIME(UCraftingInventoryComponent, CurrentJob_Timer);
 	//DOREPLIFETIME(UCraftingInventoryComponent, Client_ExpectedFinish);
 }

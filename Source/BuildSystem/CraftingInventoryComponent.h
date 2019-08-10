@@ -53,6 +53,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Inventory - Crafting") bool AddFuel(float Amount);
 
+
+	
 private:
 	//called when a recipe finishes. 
 	void EndProcessing();

@@ -53,7 +53,7 @@ FItemStack UBaseInventoryComponent::AddItem(FItemStack NewItem) {
 		}
 		else { return NewItem; }
 	}
-	return FItemStack(0, 0);
+	return FItemStack();
 }
 
 TArray<FItemStack> UBaseInventoryComponent::AddItems(TArray<FItemStack> NewItems) {
@@ -103,7 +103,9 @@ bool UBaseInventoryComponent::TransferToInventory(UBaseInventoryComponent* Recip
 
 bool UBaseInventoryComponent::TransferAllToInventory(UBaseInventoryComponent* Recipient) {
 	if(GetNumberFilledSlots() == 0) return false;
-	InventorySlots = Recipient->AddItems(InventorySlots);
+	const auto overflow =  Recipient->AddItems(InventorySlots);
+	ClearInventory();
+	AddItems(overflow);
 	return true;
 }
 
@@ -141,10 +143,13 @@ void UBaseInventoryComponent::ResizeInventory(int32 NewNumberSlots) {
 	InventorySlots.Reset(NewNumberSlots);
 	InventorySlots.AddDefaulted(NewNumberSlots);
 	NumberSlots = NewNumberSlots;
-	InventorySlots.Append(SlotsCopy);
+	AddItems(SlotsCopy);
 }
 
-void UBaseInventoryComponent::ClearInventory() { InventorySlots.Reset(); }
+void UBaseInventoryComponent::ClearInventory() {
+	InventorySlots.Reset();
+	InventorySlots.AddDefaulted(NumberSlots);
+}
 
 int32 UBaseInventoryComponent::GetFirstEmptySlot() {
 	for (int i = 0; i < InventorySlots.Num(); i++) {
@@ -179,7 +184,7 @@ bool UBaseInventoryComponent::isEmpty(FItemStack Item) { return Item.isEmpty(); 
 
 FString UBaseInventoryComponent::ToString(FItemStack Item) {
 	if(Item.isEmpty()) return FString(TEXT("Empty"));
-	return *FString::Printf(TEXT("%i: %i"), Item.Item, Item.Amount);
+	return *FString::Printf(TEXT("%s: %i"), *Item.Item.ToString(), Item.Amount);
 }
 
 FString UBaseInventoryComponent::ToStrings(TArray<FItemStack> Items) {
@@ -190,15 +195,8 @@ FString UBaseInventoryComponent::ToStrings(TArray<FItemStack> Items) {
 	return out;
 }
 
-int32 UBaseInventoryComponent::GetMaxStackForItem(FName item) const { // todo i dont like that this is a property of the inventory
-	FString context = FString();
-	auto world = GetWorld();
-	check(world);
-	auto instance = Cast<UInventoryGameInstance>(world->GetGameInstance());
-	check(instance);
-	const auto ItemDB = instance->ItemDefinitions;
-	check(ItemDB);
-	return ItemDB->FindRow<FItemDefinition>(item, context)->MaxStack;
+void UBaseInventoryComponent::SortInventory() {
+	InventorySlots.Sort();
 }
 
 
