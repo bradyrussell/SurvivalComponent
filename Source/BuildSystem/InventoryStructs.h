@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "DataTableEditor/Private/SRowEditor.h"
+#include "ItemEffectBase.h"
 #include "InventoryStructs.generated.h"
 
 USTRUCT(BlueprintType)
@@ -21,7 +22,7 @@ USTRUCT(BlueprintType)
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category="Item Stack") FName Item;
 
 	/*UFUNCTION(BlueprintPure) not allowed*/
-	bool isEmpty() { return Item == NAME_None || Amount == 0; }
+	bool isEmpty() const { return Item == NAME_None || Amount == 0; }
 
 	FORCEINLINE bool operator<(const FItemStack &Other) const
 	{
@@ -61,6 +62,9 @@ USTRUCT(BlueprintType)
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category="Item") FText DisplayDescription;
 
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category="Item") UTexture2D* DisplayIcon;
+	
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category="Item") TSubclassOf<UItemEffectBase> ItemEffect;
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category="Item") float ItemEffectMagnitude = 1.0f;
 };
 
 // todo loot table

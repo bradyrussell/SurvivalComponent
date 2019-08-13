@@ -7,7 +7,6 @@
 #include "InventoryStructs.h"
 #include "BaseInventoryComponent.generated.h"
 
-#define ITEM_NONE FItemStack(0,0);
 #define DBG_MAX_STACK 256
 
 UCLASS( ClassGroup=(Inventory), meta=(BlueprintSpawnableComponent) )

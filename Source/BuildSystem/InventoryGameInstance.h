@@ -19,3 +19,4 @@ public:
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)	UDataTable* RecipeDefinitions;
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)	UDataTable* LootDefinitions;
 };
+//todo make this an interface

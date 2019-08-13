@@ -16,7 +16,7 @@
 UCLASS()
 class BUILDSYSTEM_API UDatabaseProvider : public UBlueprintFunctionLibrary {
 	GENERATED_BODY()
-
+public:
 	//UFUNCTION(BlueprintPure, Category="Inventory Data", meta = (WorldContext = "WorldContextObject")) static int32 GetMaxStackForItem(UObject* WorldContextObject, FName item);
 
 	UFUNCTION(BlueprintPure, Category="Inventory Data", meta = (WorldContext = "WorldContextObject")) static FItemDefinition GetItemDefinition(UObject* WorldContextObject, FName item);

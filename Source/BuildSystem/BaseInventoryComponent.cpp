@@ -5,6 +5,7 @@
 #include "UnrealNetwork.h"
 #include "Engine/Engine.h"
 #include "InventoryGameInstance.h"
+#include "DatabaseProvider.h"
 
 // Sets default values for this component's properties
 UBaseInventoryComponent::UBaseInventoryComponent() {
@@ -25,14 +26,14 @@ void UBaseInventoryComponent::BeginPlay() {
 }
 
 FItemStack UBaseInventoryComponent::AddItem(FItemStack NewItem) {
-
+	const auto MaxStack = UDatabaseProvider::GetItemDefinition(this, NewItem.Item).MaxStack;
 	//do we already have any of this item?
 	for (auto& elem : InventorySlots) {
 		if (elem.Item == NewItem.Item && !elem.isEmpty()) {
 			// how much can we put in this stack
-			if (elem.Amount < DBG_MAX_STACK) {
+			if (elem.Amount < MaxStack) {
 				// how much more can we put in this stack
-				const int AmountTaken = FMath::Min(NewItem.Amount, DBG_MAX_STACK - elem.Amount); // either all of the new items OR as much as we can 
+				const int AmountTaken = FMath::Min(NewItem.Amount, MaxStack - elem.Amount); // either all of the new items OR as much as we can 
 
 				NewItem.Amount -= AmountTaken;
 				elem.Amount += AmountTaken; // perform swap
@@ -44,10 +45,10 @@ FItemStack UBaseInventoryComponent::AddItem(FItemStack NewItem) {
 	// do we have leftover items?
 	while (NewItem.Amount > 0) {
 		// can we make a new stack?
-		int emptySlot = GetFirstEmptySlot();
+		const int emptySlot = GetFirstEmptySlot();
 
 		if (InventorySlots.IsValidIndex(emptySlot)) {
-			int newStackAmount = FMath::Min(NewItem.Amount, DBG_MAX_STACK);
+			const int newStackAmount = FMath::Min(NewItem.Amount, MaxStack);
 			NewItem.Amount -= newStackAmount;
 			InventorySlots[emptySlot] = FItemStack(NewItem.Item, newStackAmount);
 		}
@@ -57,6 +58,8 @@ FItemStack UBaseInventoryComponent::AddItem(FItemStack NewItem) {
 }
 
 TArray<FItemStack> UBaseInventoryComponent::AddItems(TArray<FItemStack> NewItems) {
+	if(NewItems.Num() == 0) return NewItems;
+	
 	TArray<FItemStack> excess;
 
 	for (auto& elem : NewItems) {
@@ -95,15 +98,17 @@ TArray<FItemStack> UBaseInventoryComponent::RemoveItems(TArray<FItemStack> Items
 
 bool UBaseInventoryComponent::TransferToInventory(UBaseInventoryComponent* Recipient, int32 Slot) {
 	auto ItemInSlot = InventorySlots[Slot];
-	if(ItemInSlot.isEmpty()) return false;
+	if (ItemInSlot.isEmpty())
+		return false;
 
 	InventorySlots[Slot] = Recipient->AddItem(ItemInSlot); // move into recipient, leaving overflow
 	return true;
 }
 
 bool UBaseInventoryComponent::TransferAllToInventory(UBaseInventoryComponent* Recipient) {
-	if(GetNumberFilledSlots() == 0) return false;
-	const auto overflow =  Recipient->AddItems(InventorySlots);
+	if (GetNumberFilledSlots() == 0)
+		return false;
+	const auto overflow = Recipient->AddItems(InventorySlots);
 	ClearInventory();
 	AddItems(overflow);
 	return true;
@@ -183,21 +188,18 @@ bool UBaseInventoryComponent::areAllEmpty(TArray<FItemStack> Items) {
 bool UBaseInventoryComponent::isEmpty(FItemStack Item) { return Item.isEmpty(); }
 
 FString UBaseInventoryComponent::ToString(FItemStack Item) {
-	if(Item.isEmpty()) return FString(TEXT("Empty"));
+	if (Item.isEmpty())
+		return FString(TEXT("Empty"));
 	return *FString::Printf(TEXT("%s: %i"), *Item.Item.ToString(), Item.Amount);
 }
 
 FString UBaseInventoryComponent::ToStrings(TArray<FItemStack> Items) {
-	FString out(""); 
-	for(auto &elem:Items) {
-		out.Append(ToString(elem)+LINE_TERMINATOR);
-	}
+	FString out("");
+	for (auto& elem : Items) { out.Append(ToString(elem) + LINE_TERMINATOR); }
 	return out;
 }
 
-void UBaseInventoryComponent::SortInventory() {
-	InventorySlots.Sort();
-}
+void UBaseInventoryComponent::SortInventory() { InventorySlots.Sort(); }
 
 
 void UBaseInventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const {
