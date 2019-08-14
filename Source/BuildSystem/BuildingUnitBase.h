@@ -49,4 +49,8 @@ public:
 	UFUNCTION(BlueprintCallable) ABuildingUnitBase* RecursiveGetRoot();
 
 	static std::string RecursiveSerialize(ABuildingUnitBase* RootBuildingUnitBase);
+
+	UFUNCTION(BlueprintCallable) FString SerializeTest();
+	
+	//UFUNCTION(BlueprintCallable) FString SerializeTest2(FString x);
 };

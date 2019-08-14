@@ -17,8 +17,8 @@ public:
 	// Sets default values for this component's properties
 	UBaseInventoryComponent();
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, Category="Inventory") int32 NumberSlots;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, Category="Inventory") TArray<FItemStack> InventorySlots;
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Replicated, Category="Inventory") int32 NumberSlots;
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Replicated, Category="Inventory") TArray<FItemStack> InventorySlots;
 
 protected:
 	// Called when the game starts

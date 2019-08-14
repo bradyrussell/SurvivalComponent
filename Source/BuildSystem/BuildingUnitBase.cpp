@@ -3,6 +3,7 @@
 
 #include "BuildingUnitBase.h"
 #include "BufferArchive.h"
+#include "ObjectWriter.h"
 
 // Sets default values
 ABuildingUnitBase::ABuildingUnitBase() {
@@ -28,7 +29,7 @@ FName ABuildingUnitBase::getNearestSocket(FVector location) const {
 
 	auto sockets = BuildingMesh->GetAllSocketNames();
 	for (auto& socket : sockets) {
-		float tempDist = FVector::DistSquared(location, BuildingMesh->GetSocketLocation(socket));
+		const float tempDist = FVector::DistSquared(location, BuildingMesh->GetSocketLocation(socket));
 		if (distance > tempDist) {
 			closest = socket;
 			distance = tempDist;
@@ -72,7 +73,7 @@ void ABuildingUnitBase::AddSocketedChild(FName socket, ABuildingUnitBase* child)
 		return;
 	}
 	child->AttachToActor(this, FAttachmentTransformRules::SnapToTargetNotIncludingScale, socket);
-	UE_LOG(LogTemp, Warning, TEXT("si: %d, num: %d"), getSocketIndex(socket), socketedChildren.Num());
+	UE_LOG(LogTemp, Warning, TEXT("Attached to socket index: %d, num: %d"), getSocketIndex(socket), socketedChildren.Num());
 	socketedChildren[socketIndex] = child;
 }
 
@@ -91,19 +92,23 @@ int32 ABuildingUnitBase::getSocketIndex(FName socket) const {
 }
 
 std::string ABuildingUnitBase::RecursiveSerialize(ABuildingUnitBase* RootBuildingUnitBase) {
-	FBufferArchive archive;
+	TArray<uint8> mem;
+	mem.AddDefaulted(512);
+
+	FObjectWriter archive(mem);
 
 	archive << RootBuildingUnitBase;
 
-	return std::string((char*)archive.GetData(), archive.Num());
+	return std::string((char*)mem.GetData(), mem.Num());
+	//return std::string((char*)archive.GetData(), archive.Num());
 }
+
+FString ABuildingUnitBase::SerializeTest() { return FString(UTF8_TO_TCHAR(RecursiveSerialize(RecursiveGetRoot()).c_str())); }
 
 ABuildingUnitBase* ABuildingUnitBase::RecursiveGetRoot() {
 	ABuildingUnitBase* parent = Cast<ABuildingUnitBase>(GetAttachParentActor());
 
-	if (parent && IsValid(parent)) {
-		return parent->RecursiveGetRoot();
-	}
+	if (parent && IsValid(parent)) { return parent->RecursiveGetRoot(); }
 
 	return this;
 }
