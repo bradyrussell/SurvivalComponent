@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "Components/StaticMeshComponent.h"
 #include "BuildSystemStructs.h"
+#include "ArchiveOverloads.h"
 #include <string>
 #include "BuildingUnitBase.generated.h"
 
@@ -22,7 +23,7 @@ public:
 	UPROPERTY(BlueprintReadOnly) TArray<ABuildingUnitBase*> socketedChildren;
 	UPROPERTY(BlueprintReadOnly) TArray<FUnsocketedAttachment> unsocketedChildren;
 	UPROPERTY(BlueprintReadOnly, EditAnywhere) UStaticMeshComponent* BuildingMesh;
-
+	UPROPERTY(BlueprintReadOnly, EditAnywhere) FName BU_Type;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -50,7 +51,11 @@ public:
 
 	static std::string RecursiveSerialize(ABuildingUnitBase* RootBuildingUnitBase);
 
+	UFUNCTION(BlueprintCallable) static FString NewSerializeTest(ABuildingUnitBase* RootBuildingUnitBase);
+
 	UFUNCTION(BlueprintCallable) FString SerializeTest();
+
+	FSerializedBuildingUnit SerializeToStruct();
 	
 	//UFUNCTION(BlueprintCallable) FString SerializeTest2(FString x);
 };

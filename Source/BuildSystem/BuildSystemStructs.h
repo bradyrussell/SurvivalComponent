@@ -53,3 +53,17 @@ struct FElectricConnection
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere) FVector child_attach_location;
 
 };
+
+
+USTRUCT(BlueprintType)
+struct FSerializedBuildingUnit
+{
+	GENERATED_BODY()
+
+	// 
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere) FName Type = "Empty_Node";
+
+	TArray<FSerializedBuildingUnit> SocketedAttachments;
+
+	//todo 
+};
