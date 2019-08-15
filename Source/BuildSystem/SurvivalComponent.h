@@ -6,7 +6,10 @@
 #include "Components/ActorComponent.h"
 #include "SurvivalComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnDeath, class AActor*, KillerActor, class AController*, KillerController, float, Damage, class UDamageType*, DamageType);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnDeath, class AActor*, KillerActor, class AController*, KillerController, float, Damage, TSubclassOf<UDamageType> , DamageType);
+
+//todo add function ApplyHealthOverTime(float Duration, float TotalAmount)
+
 
 UCLASS( ClassGroup=(Survival), meta=(BlueprintSpawnableComponent) )
 	class BUILDSYSTEM_API USurvivalComponent : public UActorComponent {
@@ -40,7 +43,7 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly) bool Heal(float Amount);
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly) bool TakeDamage(float Damage, AActor* Cause, AController* Instigator, UDamageType* DamageType, bool bIgnoreArmor = false);
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly) bool TakeDamage(float Damage, AActor* Cause, AController* Instigator, TSubclassOf<UDamageType>  DamageType, bool bIgnoreArmor = false);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly) bool DeductStamina(float Amount, bool bAllowNegative = false);
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly) bool RestoreStamina(float Amount);
