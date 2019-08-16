@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "DataTableEditor/Private/SRowEditor.h"
 #include "BuildSystemStructs.generated.h"
 
 class ABuildingUnitBase;
@@ -66,4 +67,13 @@ struct FSerializedBuildingUnit
 	TArray<FSerializedBuildingUnit> SocketedAttachments;
 
 	//todo 
+};
+
+USTRUCT(BlueprintType)
+	struct FBuildingUnitDefinition : public FTableRowBase {
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category="Building Unit") FText DisplayName;
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category="Building Unit") TSubclassOf<ABuildingUnitBase> BuildingUnitClass;
+
 };

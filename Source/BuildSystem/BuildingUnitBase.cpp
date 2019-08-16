@@ -174,6 +174,11 @@ FSerializedBuildingUnit ABuildingUnitBase::SerializeToStruct() {
 	return sbu;
 }
 
+ABuildingUnitBase* ABuildingUnitBase::DeserializeFromStruct(FSerializedBuildingUnit SerializedBuildingUnit) {
+	//UWorld::SpawnActorDeferred<>();
+	return nullptr;
+}
+
 
 ABuildingUnitBase* ABuildingUnitBase::RecursiveGetRoot() {
 	ABuildingUnitBase* parent = Cast<ABuildingUnitBase>(GetAttachParentActor());

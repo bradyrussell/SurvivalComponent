@@ -6,44 +6,30 @@
 #include "InventoryStructs.h"
 #include "InventoryGameInstance.h"
 #include "Kismet/GameplayStatics.h"
-
-
-/*int32 UDatabaseProvider::GetMaxStackForItem(UObject* WorldContextObject, FName item) {
-	FString context = FString();
-
-	auto instance = Cast<UInventoryGameInstance>(UGameplayStatics::GetGameInstance(WorldContextObject));
-	check(instance);
-	const auto ItemDB = instance->ItemDefinitions;
-	check(ItemDB);
-	return ItemDB->FindRow<FItemDefinition>(item, context)->MaxStack;
-}*/
+#include "IDatabaseProvider.h"
 
 FItemDefinition UDatabaseProvider::GetItemDefinition(UObject* WorldContextObject, FName item) {
 	FString context = FString();
 
-	auto instance = Cast<UInventoryGameInstance>(UGameplayStatics::GetGameInstance(WorldContextObject));
-	check(instance);
-	const auto ItemDB = instance->ItemDefinitions;
+	const auto ItemDB = IIDatabaseProvider::Execute_GetItemDefinitions(UGameplayStatics::GetGameInstance(WorldContextObject));
 	check(ItemDB);
+	
 	return *ItemDB->FindRow<FItemDefinition>(item, context);
 }
 
 FProcessingRecipe UDatabaseProvider::GetRecipeDefinition(UObject* WorldContextObject, FName item) {
 	FString context = FString();
 
-	auto instance = Cast<UInventoryGameInstance>(UGameplayStatics::GetGameInstance(WorldContextObject));
-	check(instance);
-	const auto DB = instance->RecipeDefinitions;
+	const auto DB = IIDatabaseProvider::Execute_GetRecipeDefinitions(UGameplayStatics::GetGameInstance(WorldContextObject));
 	check(DB);
+	
 	return *DB->FindRow<FProcessingRecipe>(item, context);
 }
 
 TMap<FName, FProcessingRecipe> UDatabaseProvider::GetAllRecipesOfType(UObject* WorldContextObject, ECraftingType Type) {
 	FString context = FString();
 
-	auto instance = Cast<UInventoryGameInstance>(UGameplayStatics::GetGameInstance(WorldContextObject));
-	check(instance);
-	const auto DB = instance->RecipeDefinitions;
+	const auto DB = IIDatabaseProvider::Execute_GetRecipeDefinitions(UGameplayStatics::GetGameInstance(WorldContextObject));
 	check(DB);
 
 	TMap<FName, FProcessingRecipe> output;
@@ -60,9 +46,7 @@ TMap<FName, FProcessingRecipe> UDatabaseProvider::GetAllRecipesOfType(UObject* W
 TMap<FName, FProcessingRecipe> UDatabaseProvider::GetAllRecipesForCraftingComponent(UObject* WorldContextObject, UCraftingInventoryComponent* Inventory) {
 	FString context = FString();
 
-	auto instance = Cast<UInventoryGameInstance>(UGameplayStatics::GetGameInstance(WorldContextObject));
-	check(instance);
-	const auto DB = instance->RecipeDefinitions;
+	const auto DB = IIDatabaseProvider::Execute_GetRecipeDefinitions(UGameplayStatics::GetGameInstance(WorldContextObject));
 	check(DB);
 
 	TMap<FName, FProcessingRecipe> output;
@@ -77,18 +61,20 @@ TMap<FName, FProcessingRecipe> UDatabaseProvider::GetAllRecipesForCraftingCompon
 
 
 int32 UDatabaseProvider::ItemToIndex(UObject* WorldContextObject, FName Item) {
-	auto instance = Cast<UInventoryGameInstance>(UGameplayStatics::GetGameInstance(WorldContextObject));
-	check(instance);
-	const auto ItemDB = instance->ItemDefinitions;
+	// auto instance = Cast<IIDatabaseProvider>(UGameplayStatics::GetGameInstance(WorldContextObject));
+	// check(instance);
+	// const auto ItemDB = instance->Execute_GetItemDefinitions(UGameplayStatics::GetGameInstance(WorldContextObject));
+	// check(ItemDB);
+	const auto ItemDB = IIDatabaseProvider::Execute_GetItemDefinitions(UGameplayStatics::GetGameInstance(WorldContextObject));
 	check(ItemDB);
-
+	
 	return ItemDB->GetRowNames().Find(Item)+1;
 }
 
 FName UDatabaseProvider::IndexToItem(UObject* WorldContextObject, int32 Index) {
-	auto instance = Cast<UInventoryGameInstance>(UGameplayStatics::GetGameInstance(WorldContextObject));
-	check(instance);
-	const auto ItemDB = instance->ItemDefinitions;
+	//auto instance = /*Cast<IIDatabaseProvider>*/(UGameplayStatics::GetGameInstance(WorldContextObject));
+	//check(instance);
+	const auto ItemDB = IIDatabaseProvider::Execute_GetItemDefinitions(UGameplayStatics::GetGameInstance(WorldContextObject));
 	check(ItemDB);
 
 
@@ -98,21 +84,17 @@ FName UDatabaseProvider::IndexToItem(UObject* WorldContextObject, int32 Index) {
 }
 
 int32 UDatabaseProvider::RecipeToIndex(UObject* WorldContextObject, FName Recipe) {
-	auto instance = Cast<UInventoryGameInstance>(UGameplayStatics::GetGameInstance(WorldContextObject));
-	check(instance);
-	const auto ItemDB = instance->RecipeDefinitions;
-	check(ItemDB);
+	const auto DB = IIDatabaseProvider::Execute_GetRecipeDefinitions(UGameplayStatics::GetGameInstance(WorldContextObject));
+	check(DB);
 
-	return ItemDB->GetRowNames().Find(Recipe)+1;
+	return DB->GetRowNames().Find(Recipe)+1;
 }
 
 FName UDatabaseProvider::IndexToRecipe(UObject* WorldContextObject, int32 Index) {
-	auto instance = Cast<UInventoryGameInstance>(UGameplayStatics::GetGameInstance(WorldContextObject));
-	check(instance);
-	const auto ItemDB = instance->RecipeDefinitions;
-	check(ItemDB);
+	const auto DB = IIDatabaseProvider::Execute_GetRecipeDefinitions(UGameplayStatics::GetGameInstance(WorldContextObject));
+	check(DB);
 
-	auto Names = ItemDB->GetRowNames();
+	auto Names = DB->GetRowNames();
 	if(!Names.IsValidIndex(Index-1)) return NAME_None;
 	return Names[Index-1];
 }

@@ -5,18 +5,17 @@
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
 #include "Engine/DataTable.h"
+#include "IDatabaseProvider.h"
 #include "InventoryGameInstance.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class BUILDSYSTEM_API UInventoryGameInstance : public UGameInstance
+class BUILDSYSTEM_API UInventoryGameInstance : public UGameInstance, public IIDatabaseProvider
 {
 	GENERATED_BODY()
 public:
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)	UDataTable* ItemDefinitions;
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)	UDataTable* RecipeDefinitions;
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)	UDataTable* LootDefinitions;
+
 };
 //todo make this an interface

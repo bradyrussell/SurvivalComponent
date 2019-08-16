@@ -56,6 +56,8 @@ public:
 	UFUNCTION(BlueprintCallable) FString SerializeTest();
 
 	FSerializedBuildingUnit SerializeToStruct();
+
+	static ABuildingUnitBase* DeserializeFromStruct(FSerializedBuildingUnit SerializedBuildingUnit);
 	
 	//UFUNCTION(BlueprintCallable) FString SerializeTest2(FString x);
 };
