@@ -40,11 +40,11 @@ FORCEINLINE FArchive& operator<<(FArchive& Ar, FSerializedBuildingUnit &Serializ
 
 	const FString saveLoad = Ar.IsSaving() ? "Saving" : "Loading";
 
-	Ar << SerializedBuildingUnit.Type;
+	Ar << SerializedBuildingUnit.BU_Index;
 
-	UE_LOG(LogTemp, Warning, TEXT("%s: Type %s"), *saveLoad, *SerializedBuildingUnit.Type.ToString());
+	UE_LOG(LogTemp, Warning, TEXT("%s: Type %d"), *saveLoad, SerializedBuildingUnit.BU_Index);
 	
-	if(SerializedBuildingUnit.Type.IsEqual("Empty_Node")) return Ar; // dont write null nodes children. just saves space 
+	if(SerializedBuildingUnit.BU_Index < 0) return Ar; // dont write null nodes children. just saves space 
 	
 	UE_LOG(LogTemp, Warning, TEXT("-- %s: Begin %s attachments. "),*saveLoad, *saveLoad,SerializedBuildingUnit.SocketedAttachments.Num());
 	

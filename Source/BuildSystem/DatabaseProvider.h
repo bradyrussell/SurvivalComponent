@@ -8,6 +8,7 @@
 #include "InventoryStructs.h"
 #include "BaseInventoryComponent.h"
 #include "CraftingInventoryComponent.h"
+#include "BuildingUnitBase.h"
 #include "DatabaseProvider.generated.h"
 
 /**
@@ -36,4 +37,7 @@ public:
 
 	UFUNCTION(BlueprintPure, Category="Inventory Data", meta = (WorldContext = "WorldContextObject")) static int32 RecipeToIndex(UObject* WorldContextObject, FName Recipe);
 	UFUNCTION(BlueprintPure, Category="Inventory Data", meta = (WorldContext = "WorldContextObject")) static FName IndexToRecipe(UObject* WorldContextObject, int32 Index);
+
+	UFUNCTION(BlueprintPure, Category="Building Unit Data", meta = (WorldContext = "WorldContextObject")) static int32 BuildingUnitToIndex(UObject* WorldContextObject, TSubclassOf<ABuildingUnitBase> BuildingUnitClass);
+	UFUNCTION(BlueprintPure, Category="Building Unit Data", meta = (WorldContext = "WorldContextObject")) static TSubclassOf<ABuildingUnitBase> IndexToBuildingUnit(UObject* WorldContextObject, int32 Index);
 };

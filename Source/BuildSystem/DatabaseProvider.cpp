@@ -98,3 +98,32 @@ FName UDatabaseProvider::IndexToRecipe(UObject* WorldContextObject, int32 Index)
 	if(!Names.IsValidIndex(Index-1)) return NAME_None;
 	return Names[Index-1];
 }
+
+int32 UDatabaseProvider::BuildingUnitToIndex(UObject* WorldContextObject, TSubclassOf<ABuildingUnitBase> BuildingUnitClass) {
+	const auto DB = IIDatabaseProvider::Execute_GetBuildingDefinitions(UGameplayStatics::GetGameInstance(WorldContextObject));
+	check(DB);
+	const FString context;
+	
+	auto keys = DB->GetRowNames();
+
+	int32 outIndex = -1;
+	
+	DB->ForeachRow<FBuildingUnitDefinition>(context, [keys, BuildingUnitClass, &outIndex](const FName& Key, const FBuildingUnitDefinition& Value) {
+		if(Value.BuildingUnitClass == BuildingUnitClass) outIndex = keys.Find(Key);
+	});
+
+	return outIndex;
+}
+
+TSubclassOf<ABuildingUnitBase> UDatabaseProvider::IndexToBuildingUnit(UObject* WorldContextObject, int32 Index) {
+		const auto DB = IIDatabaseProvider::Execute_GetBuildingDefinitions(UGameplayStatics::GetGameInstance(WorldContextObject));
+	check(DB);
+
+	const FString context;
+
+	TArray<FBuildingUnitDefinition*> out;
+	
+	DB->GetAllRows<FBuildingUnitDefinition>(context, out);
+
+	return out[Index]->BuildingUnitClass;
+}

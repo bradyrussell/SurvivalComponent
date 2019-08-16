@@ -7,6 +7,7 @@
 #include "MemoryReader.h"
 #include "FileHelper.h"
 #include "ArchiveSaveCompressedProxy.h"
+#include "DatabaseProvider.h"
 
 // Sets default values
 ABuildingUnitBase::ABuildingUnitBase() {
@@ -161,7 +162,7 @@ FSerializedBuildingUnit ABuildingUnitBase::SerializeToStruct() {
 	FSerializedBuildingUnit sbu;
 	const auto Count = socketedChildren.Num();
 
-	sbu.Type = BU_Type;
+	sbu.BU_Index = UDatabaseProvider::BuildingUnitToIndex(this, this->GetClass());
 	sbu.SocketedAttachments.AddDefaulted(Count);
 
 	for (int i = 0; i < Count; ++i) {

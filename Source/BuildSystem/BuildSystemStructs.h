@@ -62,7 +62,7 @@ struct FSerializedBuildingUnit
 	GENERATED_BODY()
 
 	// 
-	UPROPERTY(BlueprintReadWrite, VisibleAnywhere) FName Type = "Empty_Node";
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere) int32 BU_Index = -1;
 
 	TArray<FSerializedBuildingUnit> SocketedAttachments;
 
