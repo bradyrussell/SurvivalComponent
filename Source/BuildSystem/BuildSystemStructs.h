@@ -4,6 +4,7 @@
 #include "DataTableEditor/Private/SRowEditor.h"
 #include "BuildSystemStructs.generated.h"
 
+struct FSerializedBuildingUnit;
 class ABuildingUnitBase;
 
 USTRUCT(BlueprintType)
@@ -20,6 +21,7 @@ struct FUnsocketedAttachment
 	// the attached object
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere) ABuildingUnitBase* child;
 };
+
 
 USTRUCT(BlueprintType)
 struct FBuildingSocket
@@ -66,8 +68,27 @@ struct FSerializedBuildingUnit
 
 	TArray<FSerializedBuildingUnit> SocketedAttachments;
 
-	//todo 
+	TArray<FTransform> UnsocketedAttachmentsTransforms;
+	TArray<FSerializedBuildingUnit> UnsocketedAttachments;
+	
+	//todo
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere) TArray<uint8> Metadata;
 };
+
+USTRUCT(BlueprintType)
+struct FSerializedBuilding
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere) FTransform RootTransform;
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere) FSerializedBuildingUnit Root;
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere) TArray<uint8> Metadata;
+
+};
+
+
+
+
 
 USTRUCT(BlueprintType)
 	struct FBuildingUnitDefinition : public FTableRowBase {
@@ -75,5 +96,8 @@ USTRUCT(BlueprintType)
 
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category="Building Unit") FText DisplayName;
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category="Building Unit") TSubclassOf<ABuildingUnitBase> BuildingUnitClass;
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category="Building Unit") UStaticMesh* BuildingUnitMesh;
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category="Building Unit") FString FitsSocket;
 
 };
+

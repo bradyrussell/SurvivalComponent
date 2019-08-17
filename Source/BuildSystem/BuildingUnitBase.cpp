@@ -8,6 +8,7 @@
 #include "FileHelper.h"
 #include "ArchiveSaveCompressedProxy.h"
 #include "DatabaseProvider.h"
+#include "ArchiveLoadCompressedProxy.h"
 
 // Sets default values
 ABuildingUnitBase::ABuildingUnitBase() {
@@ -89,6 +90,24 @@ void ABuildingUnitBase::AddSocketedChild(const FName socket, ABuildingUnitBase* 
 	socketedChildren[socketIndex] = child;
 }
 
+void ABuildingUnitBase::AddSocketedChild(int32 socket_index, ABuildingUnitBase* child) {
+	const FName socket = BuildingMesh->GetAllSocketNames()[socket_index];
+	
+	if (!socketedChildren.IsValidIndex(socket_index)) {
+		UE_LOG(LogTemp, Warning, TEXT("Tried to attach BU to nonexistent socket %s, index: %d."), *socket.ToString(), socket_index);
+		return;
+	}
+
+	if(IsValid(socketedChildren[socket_index])) {
+		UE_LOG(LogTemp, Warning, TEXT("Tried to attach BU to filled socket %s, index: %d."), *socket.ToString(), socket_index);
+		return;
+	}
+	
+	child->AttachToActor(this, FAttachmentTransformRules::SnapToTargetNotIncludingScale, socket);
+	UE_LOG(LogTemp, Warning, TEXT("Attached to socket index: %d, num: %d"), getSocketIndex(socket), socketedChildren.Num());
+	socketedChildren[socket_index] = child;
+}
+
 void ABuildingUnitBase::AddUnsocketedChild(const FTransform attachment, ABuildingUnitBase* child) {
 	child->AttachToActor(this, FAttachmentTransformRules::KeepWorldTransform);
 	FUnsocketedAttachment attach;
@@ -123,9 +142,6 @@ FString ABuildingUnitBase::NewSerializeTest(ABuildingUnitBase* RootBuildingUnitB
 
 	UE_LOG(LogTemp, Warning, TEXT("RecursiveSerialize has finished, %d bytes."),buf.Num());
 
-	//TArray<uint8> copy = buf;
-	//FMemoryReader ver(copy, true);
-	
 	FString ffs;
 
 	for(auto &elem:buf) {
@@ -145,19 +161,76 @@ FString ABuildingUnitBase::NewSerializeTest(ABuildingUnitBase* RootBuildingUnitB
 	//FSerializedBuildingUnit verified;
 	//ver << verified;
 	TArray<uint8> compressedData;
-	FArchiveSaveCompressedProxy compress = FArchiveSaveCompressedProxy(compressedData, NAME_Gzip);
+	FArchiveSaveCompressedProxy compress = FArchiveSaveCompressedProxy(compressedData, NAME_Zlib);
 
 	compress << buf;
 	compress.Flush();
 	
-	FFileHelper::SaveArrayToFile(compressedData, TEXT("C:/Users/Admin/Documents/Unreal Projects/BuildSystem/BaseStructure.cbs"));
+	FFileHelper::SaveArrayToFile(compressedData, TEXT("C:/Users/Admin/Documents/Unreal Projects/BuildSystem/BaseStructure.zcb"));
 	UE_LOG(LogTemp, Warning, TEXT("RecursiveSerialize compressed archive length: %d"), compressedData.Num());
+
+	compress.Close();
+
+	// FSerializedBuilding sb;
+	// sb.Root = SerializedBuildingUnit;
+	// sb.RootTransform = RootBuildingUnitBase->RecursiveGetRoot()->GetActorTransform();
+	// sb.RootTransform.AddToTranslation(FVector(0,0,10000));
+	//
+	// DeserializeBuildingFromStruct(RootBuildingUnitBase,sb);
 	
 	return ffs;
 }
 
-FString ABuildingUnitBase::SerializeTest() { return FString(UTF8_TO_TCHAR(RecursiveSerialize(RecursiveGetRoot()).c_str())); }
+bool ABuildingUnitBase::SaveToFile(ABuildingUnitBase* RootBuildingUnitBase) {
+	FBufferArchive buf(true);
 
+	const auto Root = RootBuildingUnitBase->RecursiveGetRoot();
+	auto SerializedBuildingUnit = Root->SerializeToStruct();
+
+	FSerializedBuilding sb;
+	sb.Root = SerializedBuildingUnit;
+	sb.RootTransform = Root->GetActorTransform();
+	
+	//////////////////
+	buf << sb;
+	
+	UE_LOG(LogTemp, Warning, TEXT("RecursiveSerialize has finished, %d bytes."),buf.Num());
+
+	TArray<uint8> compressedData;
+	FArchiveSaveCompressedProxy compress = FArchiveSaveCompressedProxy(compressedData, NAME_Zlib);
+
+	compress << buf;
+	compress.Flush();
+	
+	FFileHelper::SaveArrayToFile(compressedData, BASEFILE);
+	UE_LOG(LogTemp, Warning, TEXT("RecursiveSerialize compressed archive length: %d"), compressedData.Num());
+
+	compress.Close();
+	return true;
+}
+
+bool ABuildingUnitBase::LoadFromFile(UObject* WorldContextObject,FTransform RootLocation) {
+	TArray<uint8> data, rawData;
+	FFileHelper::LoadFileToArray(data,BASEFILE);
+
+	FArchiveLoadCompressedProxy decompress(data, NAME_Zlib);
+
+	decompress << rawData;
+	
+	FMemoryReader reader(rawData, true);
+	
+	FSerializedBuilding sb;
+
+	reader << sb;
+
+	sb.RootTransform = RootLocation;
+	
+	DeserializeBuildingFromStruct(WorldContextObject,sb);
+	
+	return true;
+}
+
+// override this function to write metadata if need be
 FSerializedBuildingUnit ABuildingUnitBase::SerializeToStruct() {
 	FSerializedBuildingUnit sbu;
 	const auto Count = socketedChildren.Num();
@@ -172,12 +245,53 @@ FSerializedBuildingUnit ABuildingUnitBase::SerializeToStruct() {
 		}
 	}
 
+	for(auto &elem:unsocketedChildren) {
+		sbu.UnsocketedAttachmentsTransforms.Add(elem.transform);
+		sbu.UnsocketedAttachments.Add(elem.child->SerializeToStruct());
+	}
+
+	//dummy metadata
+	sbu.Metadata.Add(FMath::RandRange(0,255));
+	sbu.Metadata.Add(FMath::RandRange(0,255));
+	sbu.Metadata.Add(FMath::RandRange(0,255));
+	sbu.Metadata.Add(FMath::RandRange(0,255));
+	// end dummy meta
+	
 	return sbu;
 }
 
-ABuildingUnitBase* ABuildingUnitBase::DeserializeFromStruct(FSerializedBuildingUnit SerializedBuildingUnit) {
-	//UWorld::SpawnActorDeferred<>();
-	return nullptr;
+ABuildingUnitBase* ABuildingUnitBase::DeserializeFromStruct(UObject* WorldContextObject, FSerializedBuildingUnit SerializedBuildingUnit, FTransform transform) {
+	const auto buClass = UDatabaseProvider::IndexToBuildingUnit(WorldContextObject, SerializedBuildingUnit.BU_Index);
+
+	UE_LOG(LogTemp, Warning, TEXT("DeserializeFromStruct: Deserializing a %s."), *buClass->GetName());
+	
+	auto newBU = WorldContextObject->GetWorld()->SpawnActorDeferred<ABuildingUnitBase>(buClass, transform,nullptr,nullptr,ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+	newBU->FinishSpawning(transform);//todo
+	
+	for (int i = 0; i < SerializedBuildingUnit.SocketedAttachments.Num(); i++) { // 
+		if(SerializedBuildingUnit.SocketedAttachments[i].BU_Index != -1) {
+		//const auto transform2 = newBU->BuildingMesh->GetSocketTransform(newBU->BuildingMesh->GetAllSocketNames()[i]); // not needed
+		newBU->AddSocketedChild(i,DeserializeFromStruct(WorldContextObject,SerializedBuildingUnit.SocketedAttachments[i]/*, transform2*/));
+		}
+	}
+
+	for(int i = 0; i < SerializedBuildingUnit.UnsocketedAttachmentsTransforms.Num(); i++) {
+		newBU->AddUnsocketedChild(SerializedBuildingUnit.UnsocketedAttachmentsTransforms[i],DeserializeFromStruct(WorldContextObject,SerializedBuildingUnit.UnsocketedAttachments[i]));
+	}
+
+	FString meta;
+	for(auto &elem:SerializedBuildingUnit.Metadata) {
+		meta.AppendInt(elem);
+		meta.Append(" ");
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("DeserializeFromStruct: Deserialized metadata %s."), *meta);
+	
+	return newBU;
+}
+
+ABuildingUnitBase* ABuildingUnitBase::DeserializeBuildingFromStruct(UObject* WorldContextObject, FSerializedBuilding SerializedBuilding) {
+	return DeserializeFromStruct(WorldContextObject, SerializedBuilding.Root, SerializedBuilding.RootTransform);
 }
 
 
@@ -189,6 +303,7 @@ ABuildingUnitBase* ABuildingUnitBase::RecursiveGetRoot() {
 		return parent->RecursiveGetRoot();
 	}
 	UE_LOG(LogTemp, Warning, TEXT("RecursiveFindParent: Found parent %s."), *this->GetName());
+	check(UDatabaseProvider::BuildingUnitToIndex(this, this->GetClass()) == 3);
 	return this;
 }
 /*

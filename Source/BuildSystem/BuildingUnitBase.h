@@ -10,6 +10,8 @@
 #include <string>
 #include "BuildingUnitBase.generated.h"
 
+#define BASEFILE TEXT("C:/Users/Admin/Documents/Unreal Projects/BuildSystem/Base.zcb")
+
 UCLASS()
 class BUILDSYSTEM_API ABuildingUnitBase : public AActor
 {
@@ -43,6 +45,8 @@ public:
 
 	UFUNCTION(BlueprintCallable) void AddSocketedChild(FName socket, ABuildingUnitBase* child);
 
+	/*UFUNCTION(BlueprintCallable) */void AddSocketedChild(int32 socket_index, ABuildingUnitBase* child);
+
 	UFUNCTION(BlueprintCallable) void AddUnsocketedChild(FTransform attachment, ABuildingUnitBase* child);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure) int32 getSocketIndex(FName socket) const;
@@ -53,11 +57,14 @@ public:
 
 	UFUNCTION(BlueprintCallable) static FString NewSerializeTest(ABuildingUnitBase* RootBuildingUnitBase);
 
-	UFUNCTION(BlueprintCallable) FString SerializeTest();
-
+	UFUNCTION(BlueprintCallable) static bool SaveToFile(ABuildingUnitBase* RootBuildingUnitBase);
+	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject")) static bool LoadFromFile(UObject* WorldContextObject, FTransform RootLocation);
+	
 	FSerializedBuildingUnit SerializeToStruct();
 
-	static ABuildingUnitBase* DeserializeFromStruct(FSerializedBuildingUnit SerializedBuildingUnit);
+	static ABuildingUnitBase* DeserializeFromStruct(UObject* WorldContextObject, FSerializedBuildingUnit SerializedBuildingUnit, FTransform transform = FTransform());
+
+	UFUNCTION(BlueprintPure, Category="Building Unit Save", meta = (WorldContext = "WorldContextObject")) static ABuildingUnitBase* DeserializeBuildingFromStruct(UObject* WorldContextObject, FSerializedBuilding SerializedBuilding);
 	
-	//UFUNCTION(BlueprintCallable) FString SerializeTest2(FString x);
+
 };

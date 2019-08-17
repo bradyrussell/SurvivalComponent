@@ -52,5 +52,32 @@ FORCEINLINE FArchive& operator<<(FArchive& Ar, FSerializedBuildingUnit &Serializ
 
 	UE_LOG(LogTemp, Warning, TEXT("-- %s: %d SocketedAttachments"),*saveLoad, SerializedBuildingUnit.SocketedAttachments.Num());
 
+	Ar << SerializedBuildingUnit.UnsocketedAttachmentsTransforms;
+	Ar << SerializedBuildingUnit.UnsocketedAttachments;
+
+	UE_LOG(LogTemp, Warning, TEXT("-- %s: %d UnsocketedAttachments, and %d Transforms"),*saveLoad, SerializedBuildingUnit.UnsocketedAttachments.Num(),SerializedBuildingUnit.UnsocketedAttachmentsTransforms.Num());
+	check(SerializedBuildingUnit.UnsocketedAttachments.Num() == SerializedBuildingUnit.UnsocketedAttachmentsTransforms.Num());
+
+	Ar << SerializedBuildingUnit.Metadata;
+
+	UE_LOG(LogTemp, Warning, TEXT("-- %s: %d b metadata"),*saveLoad, SerializedBuildingUnit.Metadata.Num());
+	
+	return Ar;
+}
+
+FORCEINLINE FArchive& operator<<(FArchive& Ar, FSerializedBuilding &SerializedBuilding) {
+
+	const FString saveLoad = Ar.IsSaving() ? "Saving" : "Loading";
+
+	Ar << SerializedBuilding.RootTransform;
+	
+	UE_LOG(LogTemp, Warning, TEXT("= %s building with root at %s."), *saveLoad, *SerializedBuilding.RootTransform.ToHumanReadableString());
+	
+	Ar << SerializedBuilding.Root;
+
+	Ar << SerializedBuilding.Metadata;
+
+	UE_LOG(LogTemp, Warning, TEXT("= %s: %d b metadata"),*saveLoad, SerializedBuilding.Metadata.Num());
+	
 	return Ar;
 }
